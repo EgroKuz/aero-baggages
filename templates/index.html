@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+    <div class="text-request">
+
+        <h1>Ручная кладь и багаж</h1>
+        <a href="/migration/{{ draft_migration.id }}/">
+        <button class="request-button">Заявки</button>
+        <span class="badge">
+            {{ baggages_to_migrant }}
+        </span>
+        </a>
+    </div>
+    <div class="search-bar">
+        <form method="GET" action=".">
+            <input type="text" placeholder="Поиск багажа..." name="number" value="{{ number }}">
+            <button type="submit">Поиск</button>
+        </form>
+    </div>
+
+    <div class="baggage-list">
+        {% for baggage in baggages %}
+            <a href="/baggage/{{ baggage.id }}/" class="baggage-link">
+            <div class="baggage-item">
+                <img src="{{ baggage.image }}" alt="Багаж {{ baggage.id }}">
+                <p>{{ baggage.number }}</p>
+            </div>
+            </a>
+            {% empty %}
+            <p>Багаж не найден</p>
+        {% endfor %}
+    </div>
+
+
+</main>
+{% endblock %}

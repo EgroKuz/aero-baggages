@@ -1,0 +1,246 @@
+body, h1, h2, p, a, input, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F4F6F9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* из flypobeda */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #EBEFF4;
+    padding: 10px 20px;
+}
+
+header h2 a {
+    color: #14A0E6;
+    text-decoration: none;
+    font-size: 36px;
+}
+
+main {
+    margin-top: 20px;
+}
+
+h1 {
+    font-size: 36px;
+    color: #2c4f91;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.text-request{
+    display: flex;
+    justify-content: space-between;
+    margin-left: 20px;
+}
+
+.request-button {
+    padding: 10px 20px;
+    margin-right: 20px;
+    font-size: 20px;
+    background-color: #14A0E6;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.badge {
+    position: absolute;
+    top: 75px;
+    right: 15px;
+    background-color: #000000;
+    color: white;
+    padding: 5px 5px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    display: inline-block;
+    text-align: center;
+    min-width: 20px;
+}
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #14A0E6;
+    border-radius: 10px;
+    width: 200px;
+}
+
+.search-bar button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    background-color: #14A0E6;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.baggage-list {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.baggage-item {
+    background-color: #e9f0f7;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    width: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.baggage-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.baggage-item img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.baggage-item p {
+    font-size: 18px;
+    color: #2c4f91;
+}
+
+button:hover {
+    background-color: #007acc;
+}
+
+/* baggage.html */
+
+.breadcrumb {
+    display: flex;
+    justify-content: space-between;
+    font-size: 25px;
+    padding-bottom: 30px;
+    padding-top: 20px;
+    padding-left: 50px;
+}
+
+.baggage-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+}
+.baggage-card {
+    display: flex;
+    background-color: #EBEFF4;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 800px;
+    width: 100%;
+    align-items: center;
+}
+.baggage-image {
+    flex: 1;
+    text-align: center;
+}
+.baggage-image img {
+    max-width: 200px;
+    border-radius: 15px;
+}
+.baggage-info {
+    flex: 2;
+    margin-left: 20px;
+}
+.baggage-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #2c4f91;
+}
+.baggage-details {
+    font-size: 18px;
+    color: #2c4f91;
+    margin-top: 10px;
+}
+.baggage-details p {
+    margin: 5px 0;
+}
+
+/* migration.html */
+
+.table-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background-color: #EBEFF4;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    font-size: 36px;
+    text-align: center;
+    color: #2c4f91;
+    margin-bottom: 20px;
+}
+
+/* из flypobeda */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+baggage-card {
+    display: flex;
+}
+
+th, td {
+    text-align: center;
+    padding: 25px;
+}
+
+th {
+    color: #2c4f91;
+    font-weight: bold;
+    font-size: 22px;
+    border-radius: 8px 8px 0 0;
+}
+
+td {
+    border-top: 1px solid #ddd;
+    font-size: 18px;
+    color: #2c4f91;
+}
+
+
+tr:last-child td {
+    border-bottom: none;
+}

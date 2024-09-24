@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+    <div class="breadcrumb">
+        <p><a href="/baggages/">Багажи</a> / <span>Номер {{ baggage.number }}</span></p>
+    </div>
+    <div class="baggage-container">
+        <div class="baggage-card">
+            <div class="baggage-image">
+                <img src="{{ baggage.image }}" alt="Багаж {{ baggage.id }}">
+            </div>
+            <div class="baggage-info">
+                <div class="baggage-number">
+                    {{ baggage.number }}
+                </div>
+                <div class="baggage-details">
+                    <p><strong>Номер рейса:</strong> {{ baggage.flight }}</p>
+                    <p><strong>Владелец:</strong> {{ baggage.owner }}</p>
+                    <p><strong>Информация:</strong> {{ baggage.description }}</p>
+                    </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}
