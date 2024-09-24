@@ -15,9 +15,10 @@
                 {% for baggage in baggages %}
                 <tr>
                     <td>
-                        <a href="/baggage/{{ baggage.id }}/" class="baggage-link">
-                            {{ baggage.number }}
-                        </a>
+                        <img src="{{ baggage.image }}" alt="Багаж {{ baggage.id }}" class="baggage-icon">
+                    <a href="/baggage/{{ baggage.id }}/" class="baggage-link">
+                        {{ baggage.number }}
+                    </a>
                     </td>
                     <td>{{ baggage.flight }}</td>
                     <td>{{ baggage.owner }}</td>

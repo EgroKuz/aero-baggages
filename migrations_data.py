@@ -5,14 +5,14 @@ DRAFT_MIGRATION = {
         {
             'id': 1,
             'number': '313466769',
-            'image': '',
+            'image': 'http://127.0.0.1:9000/baggages/1.jpg',
             'flight': 'DP9991',
             'owner': 'Смирнов П.И.',
         },
         {
             'id': 2,
             'number': '213456765',
-            'image': '',
+            'image': 'http://127.0.0.1:9000/baggages/2.jpg',
             'flight': 'CH2991',
             'owner': 'Петров Ф.И.'
         }
