@@ -1,16 +1,17 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from baggages_data import BAGGAGES_DATA
-from migrations_data import DRAFT_MIGRATION
+from transfers_data import DRAFT_TRANSFER
+from django.db import connection
 
 def baggages(request):
-    number = request.GET.get('number', '')
-    baggages = search_baggage(number)
-    baggages_to_migrant = sum(1 for baggage in DRAFT_MIGRATION['baggages'])
+    weight = request.GET.get('weight', '')
+    baggages = search_baggage(weight)
+    baggages_to_migrant = sum(1 for baggage in DRAFT_TRANSFER['baggages'])
     return render(request, 'index.html',{
         'baggages': baggages,
-        'number': number,
-        'draft_migration': DRAFT_MIGRATION,
+        'weight': weight,
+        'draft_transfer': DRAFT_TRANSFER,
         'baggages_to_migrant': baggages_to_migrant
     })
 def baggage(request, baggage_id):
@@ -19,15 +20,19 @@ def baggage(request, baggage_id):
         return render(request, '404.html', status=404)
     return render(request, 'baggage.html', {'baggage': baggage})
 
-def migration(request, migration_id):
-    migration = get_migration_by_id(migration_id)
-    baggages = migration['baggages']  # Получаем список багажа
-    return render(request, 'migration.html', {'baggages': baggages})
+def transfer(request, transfer_id):
+    transfer = get_transfer_by_id(transfer_id)
+    baggages = []
+    for baggage_id in transfer['baggages']:
+        baggage = get_baggage_by_id(baggage_id)
+        if baggage:
+            baggages.append(baggage)
+    return render(request, 'transfer.html', {'baggages': baggages, 'transfer': transfer})
 
-def search_baggage(number):
+def search_baggage(weight):
     result = []
     for baggage in BAGGAGES_DATA:
-        if number in baggage["number"]:
+        if weight in baggage["weight"]:
             result.append(baggage)
     return result
 
@@ -37,5 +42,5 @@ def get_baggage_by_id(baggage_id):
             return baggage
     return None
 
-def get_migration_by_id(migration_id):
-    return DRAFT_MIGRATION
+def get_transfer_by_id(transfer_id):
+    return DRAFT_TRANSFER

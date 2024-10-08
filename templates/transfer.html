@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+    <h3>Заявки</h3>
+     <section class="form-section">
+            <div class="form-group">
+                <label for="flight">Рейс</label>
+                <input type="text" id="flight" value="{{ transfer.flight }}">
+            </div>
+            <div class="form-group">
+                <label for="date">Дата</label>
+                <input type="text" id="date" value="{{ transfer.transfer_date }}">
+            </div>
+            <div class="form-group">
+                <label for="full_name">ФИО</label>
+                <input type="text" id="full_name" value="{{ transfer.full_name }}">
+            </div>
+        </section>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Код багажа</th>
+                    <th>Описание</th>
+                    <th>Хрупкость</th>
+
+                </tr>
+            </thead>
+             <tbody>
+                {% for baggage in baggages %}
+                <tr>
+                    <td>
+                        <img src="{{ baggage.image }}" alt="Багаж {{ baggage.id }}" class="baggage-icon">
+                    <a href="/baggage/{{ baggage.id }}/" class="baggage-link">
+                        {{ baggage.number }}
+                    </a>
+                    </td>
+                    <td>{{ baggage.description }}</td>
+                    <td>{{ baggage.friction }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+{% endblock %}
