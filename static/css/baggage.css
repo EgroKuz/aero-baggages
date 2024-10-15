@@ -4,6 +4,12 @@ body, h1, h2, p, a, input, button {
     box-sizing: border-box;
 }
 
+form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #F4F6F9;
@@ -101,6 +107,7 @@ h1 {
     cursor: pointer;
 }
 
+
 .baggage-list {
     display: flex;
     justify-content: flex-start;
@@ -141,6 +148,25 @@ h1 {
     color: #2c4f91;
     font-weight: bold;
     font-size: 22px;
+}
+
+.add-button {
+    margin-top: 5px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 10px 20px;
+    background-color: #14A0E6;
+    color: white;
+}
+
+.added-button {
+    margin-top: 5px;
+    border: 1px solid #14A0E6;
+    border-radius: 10px;
+    padding: 10px 20px;
+    background-color: #e9f0f7;
+    color: #14A0E6;
 }
 
 button:hover {
@@ -272,4 +298,17 @@ label {
     border: 1px solid #14A0E6;
     border-radius: 10px;
     text-align: center;
+}
+
+
+.delete-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 15px 30px;
+    background-color: #14A0E6;
+    color: white;
 }

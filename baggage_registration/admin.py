@@ -1,3 +1,7 @@
+# admin.py
 from django.contrib import admin
+from .models import Baggage, Transfer, BaggageTransfer
 
-# Register your models here.
+admin.site.register(Baggage)
+admin.site.register(Transfer)
+admin.site.register(BaggageTransfer)

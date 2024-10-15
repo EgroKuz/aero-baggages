@@ -1,47 +1,57 @@
 {% extends 'base.html' %}
 {% block content %}
 <main>
-    <h3>Заявки</h3>
-     <section class="form-section">
-            <div class="form-group">
-                <label for="flight">Рейс</label>
-                <input type="text" id="flight" value="{{ transfer.flight }}">
-            </div>
-            <div class="form-group">
-                <label for="date">Дата</label>
-                <input type="text" id="date" value="{{ transfer.transfer_date }}">
-            </div>
-            <div class="form-group">
-                <label for="full_name">ФИО</label>
-                <input type="text" id="full_name" value="{{ transfer.full_name }}">
-            </div>
-        </section>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Код багажа</th>
-                    <th>Описание</th>
-                    <th>Хрупкость</th>
+    <section>
+        {% if num_of_baggages > 0%}
+        <h3>Заявки</h3>
+         <section class="form-section">
+                <div class="form-group">
+                    <label for="flight">Рейс</label>
+                    <input type="text" id="flight" value="{{ transfer.flight }}">
+                </div>
+                <div class="form-group">
+                    <label for="date">Дата</label>
+                    <input type="text" id="date" value="{{ transfer.transfer_date }}">
+                </div>
+                <div class="form-group">
+                    <label for="owner_name">ФИО</label>
+                    <input type="text" id="owner_name" value="{{ transfer.owner_name }}">
+                </div>
+            </section>
 
-                </tr>
-            </thead>
-             <tbody>
-                {% for baggage in baggages %}
-                <tr>
-                    <td>
-                        <img src="{{ baggage.image }}" alt="Багаж {{ baggage.id }}" class="baggage-icon">
-                    <a href="/baggage/{{ baggage.id }}/" class="baggage-link">
-                        {{ baggage.number }}
-                    </a>
-                    </td>
-                    <td>{{ baggage.description }}</td>
-                    <td>{{ baggage.friction }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Код багажа</th>
+                        <th>Описание</th>
+                        <th>Хрупкость</th>
+                    </tr>
+                </thead>
+                 <tbody>
+                    {% for item in baggages %}
+                    <tr>
+                        <td>
+                            <img src="{{ item.baggage.image }}" alt="Багаж {{ item.baggage.id }}" class="baggage-icon">
+                        <a href="/baggage/{{ item.baggage.id }}/" class="baggage-link">
+                            {{ item.baggage.number }}
+                        </a>
+                        </td>
+                        <td>{{ item.baggage.description }}</td>
+                        <td>{{ item.fragility }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <form method="post" action="/transfer/{{ transfer.id }}/delete/">
+            {% csrf_token %}
+            <button type="submit" class="delete-button">Удалить заявку</button>
+        </form>
+    </section>
+    {% else %}
+        <h1> {{ error }}</h1>
+    {% endif %}
 </main>
 
 {% endblock %}
