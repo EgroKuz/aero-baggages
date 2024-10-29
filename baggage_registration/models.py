@@ -1,10 +1,11 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 class Baggage(models.Model):
     number = models.CharField(max_length=10, unique=True)
-    image = models.URLField(max_length=80)
+    image = models.URLField(null=True, max_length=80)
     weight = models.IntegerField()
     description = models.TextField()
 
@@ -27,11 +28,15 @@ class Transfer(models.Model):
     ]
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    transfer_date = models.DateField(auto_now_add=True)
-    owner_name = models.CharField(max_length=50, null=True)
-    flight = models.CharField(max_length=10, null=True)
+    transfer_date = models.DateField(null=True, auto_now_add=True)
+    owner_name = models.CharField(null=True, max_length=50)
+    flight = models.CharField(null=True, max_length=10)
     moderator = models.ForeignKey(User, related_name='moderated_transfers', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, related_name='transfers', on_delete=models.CASCADE)
+    creation_date = models.DateField(default=now)
+    formation_date = models.DateField(null=True)
+    completion_date = models.DateField(null=True)
+    heaviest_baggage = models.IntegerField(null=True)
     baggages = models.ManyToManyField(Baggage, through='BaggageTransfer')
     def __str__(self):
         return f'Transfer {self.id} - {self.owner_name} on {self.transfer_date}'
