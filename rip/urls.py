@@ -1,15 +1,30 @@
-
-from django.conf.urls.static import static
-from django.contrib import admin
+from rest_framework import permissions
+from django.urls import path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from django.urls import include, path
-from baggage_registration import views
-from rip import settings
 from baggage_registration.views import *
 from rest_framework import routers
+from django.contrib import admin
 
-router = routers.DefaultRouter()
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Baggage transfers API",
+      default_version='v1',
+      description="API for baggage transfers",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="keo22u932@student.bmstu.ru"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
     path('api/baggages/', get_baggages_list, name='get_baggages_list'),  # GET
     path('api/baggages/<int:baggage_id>/', get_baggage_by_id, name='get_baggage_by_id'),  # GET
     path('api/baggages/create/', create_baggage, name='create_baggage'),  # POST
