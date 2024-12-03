@@ -5,7 +5,7 @@ from rest_framework.response import *
 
 def process_file_upload(file_object: InMemoryUploadedFile, client, image_name):
     try:
-        client.put_object('baggages', f'parts/{image_name}', file_object, file_object.size)
+        client.put_object('baggages', f'{image_name}', file_object, file_object.size)
         return f"http://localhost:9000/baggages/{image_name}"
     except Exception as e:
         return {"error": str(e)}

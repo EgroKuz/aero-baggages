@@ -1,10 +1,6 @@
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
-from django.db import connection
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
-from rest_framework.views import APIView
 from django.db.models import Max
 from .minio import *
 from django.contrib.auth import authenticate
@@ -12,12 +8,7 @@ from .models import *
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db.models import Max
-from django.contrib.auth import authenticate
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from .authorization import *
 from drf_yasg.utils import swagger_auto_schema
@@ -79,14 +70,14 @@ def get_baggages_list(request):
     baggages_to_transfer = None
     if request.user and request.user.is_authenticated:
         try:
-            draft_transfer = Transfer.objects.filter(status='draft', user=request.user).first()
+            draft_transfer = Transfer.objects.filter(status='draft').first()
             baggages_to_transfer = len(draft_transfer.baggages.all()) if draft_transfer else None
         except Transfer.DoesNotExist:
             draft_transfer = None
 
     response = {
         'baggages': serializer.data,
-        'draft_transfer': draft_transfer.id if draft_transfer else None,
+        'draft_transfer': draft_transfer.pk if draft_transfer else None,
         'baggages_to_transfer': baggages_to_transfer
     }
     return Response(response, status=status.HTTP_200_OK)
@@ -286,13 +277,13 @@ def add_baggage_to_transfer(request, baggage_id):
             creation_date=timezone.now().date(),
             user=User.objects.filter(is_superuser=False).first()
         )
-        draft_transfer.save()
+
 
     if BaggageTransfer.objects.filter(transfer=draft_transfer, baggage=baggage).exists():
         return Response({'error': 'Багаж уже добавлен в перемещение'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     try:
-        baggage_transfer = BaggageTransfer.objects.create(
+        BaggageTransfer.objects.create(
             transfer=draft_transfer,
             baggage=baggage,
             fragility=False,
@@ -302,7 +293,7 @@ def add_baggage_to_transfer(request, baggage_id):
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     serializer = TransferSerializer(draft_transfer)
-    return Response(serializer.get_baggages(draft_transfer), status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @swagger_auto_schema(
     method="get",
