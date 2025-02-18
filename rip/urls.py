@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/baggages/<int:baggage_id>/update/', update_baggage, name='update_baggage'),  # PUT
     path('api/baggages/<int:baggage_id>/delete/', delete_baggage, name='delete_baggage'),  # DELETE
     path('api/baggages/<int:baggage_id>/update_image/', update_baggage_image, name='update_image'),  # POST
-    path('api/baggages/<int:baggage_id>/add_baggage_to_transfer/', add_baggage_to_transfer, name='add_baggage_to_transfer'), # POST
+    path('api/baggages/<int:baggage_id>/add_to_transfer/', add_baggage_to_transfer, name='add_baggage_to_transfer'), # POST
 
     # Набор методов для заявок
     path('api/transfers/', get_transfers_list, name=' get_transfers_list'),  # GET
@@ -42,12 +42,15 @@ urlpatterns = [
     path('api/transfers/<int:transfer_id>/delete/', delete_transfer, name='delete_transfer'),  # DELETE
 
     # Набор методов для м-м
-    path('api/baggage/<int:baggage_id>/transfer/<int:transfer_id>/update_baggage_transfer/', update_baggage_transfer, name='update_baggage_transfer'),  # PUT
-    path('api/baggage/<int:baggage_id>/transfer/<int:transfer_id>/delete_baggage_transfer/', delete_baggage_from_transfer, name='delete_baggage_transfer'),  # DELETE
+    path('api/transfer/<int:transfer_id>/update_baggage_transfer/<int:baggage_id>/', update_baggage_transfer, name='update_baggage_transfer'),  # PUT
+    path('api/transfer/<int:transfer_id>/delete_baggage_from_transfer/<int:baggage_id>/', delete_baggage_from_transfer, name='delete_baggage_from_transfer'),  # DELETE
 
     # Набор методов пользователей
     path('api/users/register/', register, name='register'),  # POST
     path('api/users/login/', login, name='login'),  # POST
     path('api/users/logout/', logout, name='logout'),  # POST
-    path('api/users/<int:user_id>/update/', update_user, name='update_user'),  # PUT
+    path('api/users/update/', update_user, name='update_user'),  # PUT
+
+    path('api/users/<int:user_id>/assign_manager/', assign_manager_role, name='assign_manager'),
+    path('api/users/', get_user_list, name='get_user_list'),
 ]

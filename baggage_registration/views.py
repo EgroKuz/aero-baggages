@@ -25,11 +25,11 @@ from rest_framework.decorators import (
 
 
 @swagger_auto_schema(
-    method="get",
+    method='get',
     manual_parameters=[
         openapi.Parameter(
-            "baggage_weight",
-            openapi.IN_QUERY,
+            name="baggage_weight",
+            in_=openapi.IN_QUERY,
             description="Фильтрация по совпадению веса багажа",
             type=openapi.TYPE_STRING,
         ),
@@ -38,15 +38,20 @@ from rest_framework.decorators import (
         status.HTTP_200_OK: openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "baggage": openapi.Schema(
+                "baggages": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
-                    items=openapi.Schema(type=openapi.TYPE_OBJECT),
-                    description="Список найденных багажей",
+                    items=openapi.Items(type=openapi.TYPE_OBJECT),
+                    description="Список багажей"
                 ),
                 "draft_transfer": openapi.Schema(
                     type=openapi.TYPE_NUMBER,
                     description="ID черновика заявки, если существует",
-                    nullable=True,
+                    nullable=True
+                ),
+                "baggages_to_transfer": openapi.Schema(
+                    type=openapi.TYPE_NUMBER,
+                    description="Количество багажей в черновике",
+                    nullable=True
                 ),
             },
         ),
@@ -84,14 +89,6 @@ def get_baggages_list(request):
 
 @swagger_auto_schema(
     method="get",
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID искомого багажа"
-        )
-    ],
     responses={
         status.HTTP_200_OK: SingleBaggageSerializer(),
         status.HTTP_404_NOT_FOUND: "Багаж не найден",
@@ -132,14 +129,6 @@ def create_baggage(request):
 @swagger_auto_schema(
     method="put",
     request_body=CreateUpdateBaggageSerializer,
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID обновляемого багажа"
-        )
-    ],
     responses={
         status.HTTP_200_OK: BaggageSerializer(),
         status.HTTP_403_FORBIDDEN: "Вы не вошли в систему как модератор",
@@ -149,7 +138,6 @@ def create_baggage(request):
 )
 
 @api_view(['PUT'])
-@permission_classes([IsManagerAuth])
 def update_baggage(request, baggage_id):
     try:
         baggage = Baggage.objects.get(pk=baggage_id)
@@ -167,14 +155,6 @@ def update_baggage(request, baggage_id):
 
 @swagger_auto_schema(
     method="delete",
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID удаляемого багажа"
-        )
-    ],
     responses={
         status.HTTP_200_OK: BaggageSerializer(many=True),
         status.HTTP_403_FORBIDDEN: "Вы не вошли в систему как модератор",
@@ -183,7 +163,6 @@ def update_baggage(request, baggage_id):
 )
 
 @api_view(['DELETE'])
-@permission_classes([IsManagerAuth])
 def delete_baggage(request, baggage_id):
     try:
         baggage = Baggage.objects.get(pk=baggage_id)
@@ -206,29 +185,20 @@ def delete_baggage(request, baggage_id):
         },
         required=["image"]
     ),
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID багажа, для которого загружается/изменяется изображение"
-        )
-    ],
     responses={
         status.HTTP_200_OK: BaggageSerializer(),
         status.HTTP_400_BAD_REQUEST: "Изображение не предоставлено",
         status.HTTP_403_FORBIDDEN: "Вы не вошли в систему как модератор",
-        status.HTTP_404_NOT_FOUND: "Багаж не найден",
+        status.HTTP_404_NOT_FOUND: "Багаж не найден"
     },
 )
 
 @api_view(["POST"])
-@permission_classes([IsManagerAuth])
 def update_baggage_image(request, baggage_id):
     try:
         baggage = Baggage.objects.get(pk=baggage_id)
     except Baggage.DoesNotExist:
-        return Response({"Ошибка": "Орбита не найдена"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"Ошибка": "Багаж не найден"}, status=status.HTTP_404_NOT_FOUND)
 
     image = request.FILES.get("image")
 
@@ -244,14 +214,6 @@ def update_baggage_image(request, baggage_id):
 
 @swagger_auto_schema(
     method="post",
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID багажа, добавляемого в заявку"
-        )
-    ],
     responses={
         status.HTTP_201_CREATED: TransferSerializer(),
         status.HTTP_404_NOT_FOUND: "Багаж не найден",
@@ -265,6 +227,10 @@ def update_baggage_image(request, baggage_id):
 @permission_classes([IsAuth])
 @authentication_classes([AuthBySessionID])
 def add_baggage_to_transfer(request, baggage_id):
+
+    if not request.user or not request.user.is_authenticated:
+        return Response({'error': 'Пользователь не аутентифицирован'}, status=status.HTTP_401_UNAUTHORIZED)
+
     try:
         baggage = Baggage.objects.get(pk=baggage_id)
     except Baggage.DoesNotExist:
@@ -275,7 +241,7 @@ def add_baggage_to_transfer(request, baggage_id):
     if draft_transfer is None:
         draft_transfer = Transfer.objects.create(
             creation_date=timezone.now().date(),
-            user=User.objects.filter(is_superuser=False).first()
+            user=request.user
         )
 
 
@@ -354,45 +320,122 @@ def get_transfers_list(request):
 
 @swagger_auto_schema(
     method="get",
-    manual_parameters=[
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID искомой заявки",
-        ),
-    ],
     responses={
-        status.HTTP_200_OK: SingleTransferSerializer(),
+        status.HTTP_200_OK: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    title="ID",
+                    readOnly=True,
+                ),
+                "baggages_to_transfer": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    title="Baggages to transfer",
+                    readOnly=True,
+                ),
+                "user": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    title="Owner",
+                    readOnly=True,
+                ),
+                "baggages": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    title="Baggages",
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                            "weight": openapi.Schema(type=openapi.TYPE_INTEGER),
+                            "number": openapi.Schema(type=openapi.TYPE_STRING),
+                            "description": openapi.Schema(type=openapi.TYPE_STRING),
+                            "image": openapi.Schema(type=openapi.TYPE_STRING, format="uri"),
+                        },
+                    ),
+                    readOnly=True,
+                ),
+                "transfer_date": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="date",
+                    title="Запланированная дата отправки",
+                    nullable=True,
+                ),
+                "flight": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    title="Номер рейса",
+                    maxLength=50,
+                    nullable=True,
+                ),
+                "owner_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    title="Имя владельца",
+                    maxLength=50,
+                    nullable=True,
+                ),
+                "moderator": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    title="Moderator",
+                    readOnly=True,
+                    nullable=True,
+                ),
+                "status": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    title="Статус",
+                    enum=["draft", 'deleted', 'formed', 'completed', 'rejected'],
+                ),
+                "creation_date": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="date-time",
+                    title="Дата создания",
+                ),
+                "formation_date": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="date-time",
+                    title="Дата формирования",
+                    nullable=True,
+                ),
+                "completion_date": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="date-time",
+                    title="Дата завершения",
+                    nullable=True,
+                ),
+                "heaviest_baggage": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    title="Самый тяжелый багаж",
+                    nullable=True,
+                ),
+            },
+        ),
         status.HTTP_403_FORBIDDEN: "Вы не вошли в систему",
-        status.HTTP_404_NOT_FOUND: "Заявка не найдена",
-    },
+        status.HTTP_404_NOT_FOUND: "Переход не найден",
+    }
 )
 
 @api_view(["GET"])
 @permission_classes([IsAuth])
 @authentication_classes([AuthBySessionID])
 def get_transfer_by_id(request, transfer_id):
+
     try:
         transfer = Transfer.objects.get(pk=transfer_id)
+        print(f"Owner of transfer {transfer_id}: {transfer.user} (type: {type(transfer.user)})")  # Кто владелец?
+        print(f"Current User ID: {request.user.id}")
+        print(f"Owner ID from Transfer: {transfer_id}")
     except Transfer.DoesNotExist:
         return Response({"error": "Заявка не найдена"}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = SingleTransferSerializer(transfer, many=False)
+    print(f"Current User: {request.user} (type: {type(request.user)})")  # Кто запрашивает?
 
+    if not request.user.is_superuser and transfer.user != request.user:
+        return Response({"error": "У вас нет доступа"}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = SingleTransferSerializer(transfer, many=False)
     return Response(serializer.data)
 
 
 @swagger_auto_schema(
     method="put",
-    manual_parameters=[
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID изменяемой заявки",
-        )
-    ],
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -446,14 +489,6 @@ def update_transfer(request, transfer_id):
 
 @swagger_auto_schema(
     method="put",
-    manual_parameters=[
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID заявки, формируемой создателем",
-        ),
-    ],
     responses={
         status.HTTP_200_OK: TransferSerializer(),
         status.HTTP_400_BAD_REQUEST: "Не заполнены обязательные поля: [поля, которые не заполнены]",
@@ -495,14 +530,6 @@ def update_status_user(request, transfer_id):
 
 @swagger_auto_schema(
     method="put",
-    manual_parameters=[
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID заявки, обрабатываемой модератором",
-        ),
-    ],
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -550,14 +577,6 @@ def update_status_admin(request, transfer_id):
 
 @swagger_auto_schema(
     method="delete",
-    manual_parameters=[
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID удаляемой заявки",
-        ),
-    ],
     responses={
         status.HTTP_200_OK: TransferSerializer(),
         status.HTTP_403_FORBIDDEN: "Доступ запрещен",
@@ -589,20 +608,6 @@ def delete_transfer(request, transfer_id):
 
 @swagger_auto_schema(
     method="delete",
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID багажа в заявке"
-        ),
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID заявки"
-        ),
-    ],
     responses={
         status.HTTP_200_OK: TransferSerializer(),
         status.HTTP_403_FORBIDDEN: "Доступ запрещен",
@@ -613,7 +618,7 @@ def delete_transfer(request, transfer_id):
 @api_view(["DELETE"])
 @permission_classes([IsAuth])
 @authentication_classes([AuthBySessionID])
-def delete_baggage_from_transfer(request, baggage_id, transfer_id):
+def delete_baggage_from_transfer(request, transfer_id, baggage_id):
     try:
         baggage_transfer = BaggageTransfer.objects.get(baggage_id=baggage_id, transfer_id=transfer_id)
     except BaggageTransfer.DoesNotExist:
@@ -635,20 +640,6 @@ def delete_baggage_from_transfer(request, baggage_id, transfer_id):
 
 @swagger_auto_schema(
     method="put",
-    manual_parameters=[
-        openapi.Parameter(
-            name="baggage_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID багажа в заявке"
-        ),
-        openapi.Parameter(
-            name="transfer_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="ID заявки"
-        ),
-    ],
     responses={
         status.HTTP_200_OK: BaggageTransferSerializer(),
         status.HTTP_403_FORBIDDEN: "Доступ запрещен",
@@ -705,13 +696,16 @@ def register(request):
 @api_view(["PUT"])
 @permission_classes([IsAuth])
 @authentication_classes([AuthBySessionID])
-def update_user(request, user_id):
-    serializer = UserSerializer(request.user, data=request.data, partial=True)
+def update_user(request):
+    cleaned_data = {key: value for key, value in request.data.items() if value != ""}
+    print("Received cleaned request data:", cleaned_data)
+
+    serializer = UserSerializer(request.user, data=cleaned_data, partial=True)
     if serializer.is_valid():
+        print("Validated successfully")
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @swagger_auto_schema(
     method="post",
     manual_parameters=[
@@ -731,13 +725,24 @@ def update_user(request, user_id):
         ),
     ],
     responses={
-        status.HTTP_200_OK: "OK",
-        status.HTTP_400_BAD_REQUEST: "Bad Request",
+        status.HTTP_200_OK: openapi.Response(
+            description="User successfully logged in",
+            schema=UserSerializer()
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            description="Invalid credentials",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "error": openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     },
 )
 
 @api_view(["POST"])
-@parser_classes((MultiPartParser, FormParser))
+@parser_classes((FormParser, ))
 @permission_classes([AllowAny])
 def login(request):
     username = request.data.get("username")
@@ -746,7 +751,8 @@ def login(request):
     if user is not None:
         session_id = str(uuid.uuid4())
         session_storage.set(session_id, username)
-        response = Response(status=status.HTTP_200_OK)
+        serializer = UserSerializer(user)
+        response = Response(serializer.data, status=status.HTTP_200_OK)
         response.set_cookie("session_id", session_id, samesite="Lax")
         return response
     return Response(
@@ -764,8 +770,68 @@ def login(request):
 
 @api_view(["POST"])
 def logout(request):
-    session_id = request.COOKIES["session_id"]
+    session_id = request.COOKIES.get("session_id")  # 👈 Безопасный доступ
+
+    if not session_id:
+        return Response({"error": "Session not found"}, status=status.HTTP_403_FORBIDDEN)
+
+    print(f"🛑 Удаление session_id: {session_id}")
+
     if session_storage.exists(session_id):
         session_storage.delete(session_id)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response(status=status.HTTP_403_FORBIDDEN)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie("session_id")
+        return response
+
+    return Response({"error": "Invalid session"}, status=status.HTTP_403_FORBIDDEN)
+
+@swagger_auto_schema(
+    method="post",
+    responses={
+        status.HTTP_200_OK: "Роль менеджера успешно выдана",
+        status.HTTP_403_FORBIDDEN: "Доступ запрещён",
+        status.HTTP_404_NOT_FOUND: "Пользователь не найден",
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsManagerAuth])
+@authentication_classes([AuthBySessionID])
+def assign_manager_role(request, user_id):
+    try:
+        user = User.objects.get(pk=user_id)
+        user.is_staff = True
+        user.save()
+        return Response(
+            {"message": f"Пользователю {user.username} выданы права менеджера."},
+            status=status.HTTP_200_OK,
+        )
+    except User.DoesNotExist:
+        return Response({"error": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@swagger_auto_schema(
+    method="get",
+    responses={
+        status.HTTP_200_OK: openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="ID пользователя"),
+                    "username": openapi.Schema(type=openapi.TYPE_STRING, description="Имя пользователя"),
+                    "email": openapi.Schema(type=openapi.TYPE_STRING, description="Электронная почта пользователя"),
+                    "is_staff": openapi.Schema(type=openapi.TYPE_BOOLEAN, description="Является ли сотрудником"),
+                    "is_superuser": openapi.Schema(type=openapi.TYPE_BOOLEAN, description="Является ли суперпользователем"),
+                },
+            ),
+        ),
+        status.HTTP_403_FORBIDDEN: "Доступ запрещён",
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsManagerAuth])
+def get_user_list(request):
+
+    users = User.objects.all()
+    serializer = UserListSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

@@ -8,6 +8,7 @@ from rest_framework import exceptions
 class AuthBySessionID(authentication.BaseAuthentication):
     def authenticate(self, request):
         session_id = request.COOKIES.get("session_id")
+        print(f"Session ID: {session_id}")
         if session_id is None:
             raise exceptions.AuthenticationFailed("Нет сессии")
         try:
@@ -51,13 +52,25 @@ class IsAuth(permissions.BasePermission):
 class IsManagerAuth(permissions.BasePermission):
     def has_permission(self, request, view):
         session_id = request.COOKIES.get("session_id")
+        print(f"🔍 Session ID from request: {session_id}")  # Логируем session_id
+
         if session_id is None:
             return False
+
         try:
             username = session_storage.get(session_id).decode("utf-8")
+            print(f"🔍 Username from session storage: {username}")  # Логируем имя пользователя
         except Exception as e:
+            print(f"❌ Session error: {e}")
             return False
+
         user = User.objects.filter(username=username).first()
+        print(f"🔍 Found user: {user} (ID: {user.id if user else 'N/A'})")  # Логируем пользователя
+
         if user is None:
             return False
-        return user.is_superuser
+
+        has_access = user.is_superuser or user.is_staff
+        print(f"🔍 User is_superuser: {user.is_superuser}, is_staff: {user.is_staff}, Access: {has_access}")  # Логируем права
+
+        return has_access
